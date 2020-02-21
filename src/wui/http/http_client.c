@@ -55,6 +55,7 @@
 #include "lwip/init.h"
 
 #include "wui_api.h"
+#include "wui_helper_funcs.h"
 #include "stm32f4xx_hal.h"
 
 #include <stdio.h>
