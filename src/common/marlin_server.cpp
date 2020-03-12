@@ -834,6 +834,13 @@ int _process_server_request(char *request) {
         uint8_t tmp_state;
         if(sscanf(request + 10, "%hhu", &tmp_state) == 1){
             marlin_server.printer_state = tmp_state;
+            _send_notify_event(MARLIN_EVT_ConnectState, 0, 0);
+        }
+        processed = 1;
+    } else if (strncmp("!getstate ", request, 10) == 0) {
+        uint8_t * dest_state;
+        if(sscanf(request + 10, "%p", &dest_state) == 1){
+            *dest_state = marlin_server.printer_state;
         }
         processed = 1;
     } else if (strcmp("!qstop", request) == 0) {

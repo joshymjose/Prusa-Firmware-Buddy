@@ -174,7 +174,9 @@ extern void marlin_print_resume(void);
 
 extern void marlin_park_head(void);
 
-extern void marlin_connect_state(uint8_t state);
+extern void marlin_set_connect_state(uint8_t state);
+
+extern void marlin_get_connect_state(uint8_t * ptr);
 
 extern uint8_t marlin_message_received(void);
 

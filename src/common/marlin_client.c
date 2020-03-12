@@ -10,7 +10,7 @@
 #include "stm32f4xx_hal.h"
 #include "ffconf.h"
 
-#define STATE_MSG_SIZE 12
+#define STATE_MSG_SIZE 21
 
 #define DBG _dbg1 //enabled level 1
 //#define DBG(...)
@@ -571,7 +571,7 @@ void marlin_park_head(void) {
     _wait_ack_from_server(client->id);
 }
 
-void marlin_connect_state(uint8_t state){
+void marlin_set_connect_state(uint8_t state){
     marlin_client_t *client = _client_ptr();
     if(client == 0){
         return;
@@ -580,6 +580,19 @@ void marlin_connect_state(uint8_t state){
     snprintf(message, STATE_MSG_SIZE, "!setstate %hhu", state);
     _send_request_to_server(client->id, message);
     _wait_ack_from_server(client->id);
+    client->events &= ~MARLIN_EVT_MSK(MARLIN_EVT_ConnectState);
+}
+
+void marlin_get_connect_state(uint8_t * ptr){
+    marlin_client_t *client = _client_ptr();
+    if(client == 0){
+        return;
+    }
+    char message[STATE_MSG_SIZE];
+    snprintf(message, STATE_MSG_SIZE, "!getstate %p", ptr);
+    _send_request_to_server(client->id, message);
+    _wait_ack_from_server(client->id);
+    client->events &= ~MARLIN_EVT_MSK(MARLIN_EVT_ConnectState);
 }
 
 uint8_t marlin_message_received(void) {
@@ -738,6 +751,9 @@ void _process_client_message(marlin_client_t *client, variant8_t msg) {
             break;
         case MARLIN_EVT_Reheat:
             client->reheating = (uint8_t)msg.ui32;
+            break;
+        case MARLIN_EVT_ConnectState:
+            client->events |= MARLIN_EVT_MSK(MARLIN_EVT_ConnectState);
             break;
         case MARLIN_EVT_Acknowledge:
             client->ack = msg.ui32;
