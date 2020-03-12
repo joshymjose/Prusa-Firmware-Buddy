@@ -30,6 +30,7 @@ typedef struct {
     marlin_vars_t *wui_marlin_vars;
     char request[MAX_WUI_REQUEST_LEN];
     uint8_t request_len;
+    uint8_t printer_state;
 } web_client_t;
 web_vars_t web_vars;
 
@@ -77,6 +78,9 @@ void StartWebServerTask(void const *argument) {
             marlin_client_loop();
             update_web_vars();
         }
+        if(marlin_event(MARLIN_EVT_ConnectState)){
+            marlin_get_connect_state(&wui.printer_state);
+        }
 #ifndef BUDDY_DISABLE_HTTP_CLIENT
         buddy_http_client_loop();
 #endif
@@ -123,7 +127,7 @@ static int process_wui_request() {
 
     if(strncmp(wui.request, "!cip ", 5) == 0){
         uint32_t ip;
-        if(sscanf(wui.request + 5, "%u", &ip)){
+        if(sscanf(wui.request + 5, "%lu", &ip)){
             eeprom_set_var(EEVAR_CONNECT_IP, variant8_ui32(ip));
         }
     } else if (strncmp(wui.request, "!ck ", 4) == 0){
