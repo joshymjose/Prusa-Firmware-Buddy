@@ -76,6 +76,7 @@ typedef struct _marlin_server_t {
     uint32_t command_end;                                    // variable for notification
     marlin_mesh_t mesh;                                      // meshbed leveling
     uint64_t mesh_point_notsent[MARLIN_MAX_CLIENTS];         // mesh point mask (points that are not sent)
+    uint8_t printer_state;
 } marlin_server_t;
 
 #pragma pack(pop)
@@ -174,6 +175,7 @@ void marlin_server_init(void) {
     marlin_server.mesh.xc = 4;
     marlin_server.mesh.yc = 4;
     marlin_server.gcode_name[0] = '\0';
+    marlin_server.printer_state = STATE_IDLE;
 }
 
 void print_fan_spd() {
@@ -827,6 +829,12 @@ int _process_server_request(char *request) {
         processed = 1;
     } else if (strncmp("!gfileget ", request, 10) == 0) {
         marlin_server_get_gcode_name(request + 10);
+        processed = 1;
+    } else if (strncmp("!setstate ", request, 10) == 0) {
+        uint8_t tmp_state;
+        if(sscanf(request + 10, "%hhu", &tmp_state) == 1){
+            marlin_server.printer_state = tmp_state;
+        }
         processed = 1;
     } else if (strcmp("!qstop", request) == 0) {
         marlin_server_quick_stop();

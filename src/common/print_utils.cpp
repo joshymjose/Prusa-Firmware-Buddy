@@ -12,4 +12,5 @@ extern "C" void print_begin(const char *filename) {
     // FIXME: This should not be here and it should be handled
     // in Marlin. Needs refactoring!
     oProgressData.mInit();
+    marlin_connect_state(STATE_PRINTING);
 }

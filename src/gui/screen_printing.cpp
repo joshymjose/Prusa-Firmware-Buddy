@@ -410,6 +410,7 @@ int screen_printing_event(screen_t *screen, window_t *window, uint8_t event, voi
         marlin_error_clr(MARLIN_ERR_ProbingFailed);
         if (state__readonly__use_change_print_state != P_MBL_FAILED) {
             change_print_state(screen, P_MBL_FAILED);
+            marlin_connect_state(STATE_ERROR);
             screen_mesh_err_stop_print(screen);
 
             if (gui_msgbox("Bed leveling failed. Try again?", MSGBOX_BTN_YESNO) == MSGBOX_RES_YES) {
@@ -486,6 +487,7 @@ int screen_printing_event(screen_t *screen, window_t *window, uint8_t event, voi
             if (gui_msgbox("Are you sure to stop this printing?",
                     MSGBOX_BTN_YESNO | MSGBOX_ICO_WARNING | MSGBOX_DEF_BUTTON1)
                 == MSGBOX_RES_YES) {
+                marlin_connect_state(STATE_IDLE);
                 abort_print(screen);
                 screen_close();
                 return 1;
@@ -618,12 +620,14 @@ void screen_printing_update_progress(screen_t *screen) {
 
 void screen_printing_pause_print(screen_t *screen) {
     change_print_state(screen, P_PAUSING);
+    marlin_connect_state(STATE_PAUSED);
     marlin_event_clr(MARLIN_EVT_UserConfirmRequired);
     marlin_print_pause();
 }
 
 void screen_printing_resume_print(screen_t *screen) {
     change_print_state(screen, P_RESUMING);
+    marlin_connect_state(STATE_PRINTING);
     marlin_print_resume();
 }
 

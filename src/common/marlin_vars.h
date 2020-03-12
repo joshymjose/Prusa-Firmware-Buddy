@@ -75,6 +75,14 @@
 
 #define GCODE_NAME_MAX_LEN 96
 
+typedef enum {
+    STATE_IDLE,
+    STATE_PRINTING,
+    STATE_FINISHED,
+    STATE_PAUSED,
+    STATE_ERROR,
+}MI_printer_states;
+
 #pragma pack(push)
 #pragma pack(1)
 

@@ -10,6 +10,8 @@
 #include "stm32f4xx_hal.h"
 #include "ffconf.h"
 
+#define STATE_MSG_SIZE 12
+
 #define DBG _dbg1 //enabled level 1
 //#define DBG(...)
 
@@ -566,6 +568,17 @@ void marlin_park_head(void) {
     if (client == 0)
         return;
     _send_request_to_server(client->id, "!park");
+    _wait_ack_from_server(client->id);
+}
+
+void marlin_connect_state(uint8_t state){
+    marlin_client_t *client = _client_ptr();
+    if(client == 0){
+        return;
+    }
+    char message[STATE_MSG_SIZE];
+    snprintf(message, STATE_MSG_SIZE, "!setstate %hhu", state);
+    _send_request_to_server(client->id, message);
     _wait_ack_from_server(client->id);
 }
 
