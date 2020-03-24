@@ -1,4 +1,5 @@
 #include "wui_helper_funcs.h"
+#include "http_client.h"
 #include "jsmn.h"
 #include "wui.h"
 #include <stdarg.h>
@@ -6,6 +7,8 @@
 #include <string.h>
 #include "eeprom.h"
 #include "ip4_addr.h"
+
+#define MAX_ACK_SIZE    16
 
 static char buffer[MAX_REQ_BODY_SIZE] = "";
 
@@ -97,6 +100,36 @@ void http_json_parser(char *json, uint32_t len) {
             i++;
         }
     }
+}
+
+void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id){
+    uint32_t curr = 0;
+    static char gcode_str[MAX_REQ_MARLIN_SIZE];
+
+    if(length <= 2){
+        connect_event_t evt;
+        strcpy(evt.state, "REJECTED");
+        evt.command_id = id;
+        strcpy(evt.reason, "Wrong command body.");
+        buddy_http_client_init(MSG_EVENTS_REJ, &evt);
+        return;
+    }
+
+    do {
+        int i = curr;
+        while(i < length && request[i] != '\0' && request[i] != '\n'){
+            i++;
+        }
+        strlcpy(gcode_str, request + curr, i - curr);
+        curr = i + 1;
+        send_request_to_wui(gcode_str);
+        if(curr >= length && id >= 0){
+            connect_event_t evt;
+            strcpy(evt.state, "ACCEPTED");
+            evt.command_id = id;
+            buddy_http_client_init(MSG_EVENTS_ACC, &evt);
+        }
+    } while(curr < length);
 }
 
 const char *char_streamer(const char *format, ...) {

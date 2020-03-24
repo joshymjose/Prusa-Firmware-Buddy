@@ -160,6 +160,7 @@ void _server_update_pqueue(void);
 uint64_t _server_update_vars(uint64_t force_update_msk);
 int _process_server_request(char *request);
 int _server_set_var(char *name_val_str);
+void _device_state_change(uint8_t new_state);
 
 //-----------------------------------------------------------------------------
 // server side functions
@@ -177,6 +178,7 @@ void marlin_server_init(void) {
     marlin_server.mesh.xc = 4;
     marlin_server.mesh.yc = 4;
     marlin_server.gcode_name[0] = '\0';
+    _device_state_change(DEVICE_STATE_IDLE);
 }
 
 void print_fan_spd() {
@@ -396,6 +398,7 @@ void marlin_server_manage_heater(void) {
 }
 
 void marlin_server_quick_stop(void) {
+    _device_state_change(DEVICE_STATE_IDLE);
     planner.quick_stop();
 }
 
@@ -404,6 +407,9 @@ void marlin_server_print_abort(void) {
     card.flag.abort_sd_printing = true;
     print_job_timer.stop();
     queue.clear();
+    if(marlin_server.vars.device_state != DEVICE_STATE_ERROR){
+        _device_state_change(DEVICE_STATE_IDLE);
+    }
     //	planner.quick_stop();
     //	marlin_server_park_head();
     //	planner.synchronize();
@@ -414,12 +420,14 @@ void marlin_server_print_pause(void) {
     card.pauseSDPrint();
     print_job_timer.pause();
     queue.inject_P("M125");
+    _device_state_change(DEVICE_STATE_PAUSED);
 }
 
 void marlin_server_print_resume(void) {
     wait_for_user = false;
     host_prompt_button_clicked = HOST_PROMPT_BTN_Continue;
     queue.inject_P("M24");
+    _device_state_change(DEVICE_STATE_PRINTING);
 }
 
 void marlin_server_park_head(void) {
@@ -769,6 +777,25 @@ uint64_t _server_update_vars(uint64_t update) {
             changes |= MARLIN_VAR_MSK(MARLIN_VAR_DURATION);
         }
     }
+
+    if (update & MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE)) {
+        if(marlin_server.vars.device_state == DEVICE_STATE_PRINTING){
+            if(!(marlin_server.vars.sd_printing) && marlin_server.command != MARLIN_CMD_M600 && !(marlin_server.vars.motion ? 1 : 0)){
+                marlin_server.vars.device_state = DEVICE_STATE_FINISHED;
+                marlin_server.notify_events |= MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
+                // TODO: HARVERST STATE AND THEN BACK TO IDLE
+            }
+        } else if ((marlin_server.vars.device_state == DEVICE_STATE_IDLE || marlin_server.vars.device_state == DEVICE_STATE_FINISHED) && marlin_server.vars.sd_printing){
+            marlin_server.vars.device_state = DEVICE_STATE_PRINTING;
+            marlin_server.notify_events |= MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
+        }
+        if(marlin_server.notify_events & MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange)){
+            marlin_server.notify_events &= ~MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
+            _send_notify_event(MARLIN_EVT_DevStateChange, 0, 0);
+            changes |= MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE);
+        }
+    }
+
     return changes;
 }
 
@@ -916,6 +943,12 @@ int _server_set_var(char *name_val_str) {
     return 1;
 }
 
+void _device_state_change(uint8_t new_state){
+    marlin_server.vars.device_state = new_state;
+    marlin_server.notify_events |= MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
+    marlin_server_update(MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE));
+}
+
 // this is extern from guimain.c, used in temporary fix (force_M600_notify)
 // this variable is set imediately after
 extern int gui_marlin_client_id;
@@ -1017,6 +1050,7 @@ void onPrinterKilled(PGM_P const msg, PGM_P const component) {
 #ifndef _DEBUG
     HAL_IWDG_Refresh(&hiwdg);     //watchdog reset
 #endif                            //_DEBUG
+    _device_state_change(DEVICE_STATE_ERROR);
     if (_is_thermal_error(msg)) { //todo remove me after new thermal manager
         const marlin_vars_t &vars = marlin_server.vars;
         temp_error(msg, component, vars.temp_nozzle, vars.target_nozzle, vars.temp_bed, vars.target_bed);

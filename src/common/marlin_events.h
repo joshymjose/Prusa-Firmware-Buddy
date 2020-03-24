@@ -38,8 +38,9 @@ typedef enum {
     MARLIN_EVT_Reheat,              //
     MARLIN_EVT_DialogOpen,          //
     MARLIN_EVT_DialogClose,         //
-    MARLIN_EVT_GFileChange,         // when gcode file changed on start print
-    MARLIN_EVT_Acknowledge          // onAcknowledge - lowest priority
+    MARLIN_EVT_GFileChange,          // when gcode file name is changed
+    MARLIN_EVT_DevStateChange,      // when device state is changed
+    MARLIN_EVT_Acknowledge,          // onAcknowledge - lowest priority
 } MARLIN_EVT_t;
 #define MARLIN_EVT_MAX MARLIN_EVT_Acknowledge
 
