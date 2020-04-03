@@ -21,24 +21,33 @@ typedef enum{
     _NETVAR_LAN_IP4_ADDR,
     _NETVAR_LAN_IP4_MSK,
     _NETVAR_LAN_IP4_GW,
-    _NETVAR_DNS1,
-    _NETVAR_DNS2,
+    _NETVAR_DNS1_IP4,
+    _NETVAR_DNS2_IP4,
     _NETVAR_CONNECT_IP4,
+    _NETVAR_CONNECT_PORT,
 } _NETVAR_t;
 #define _NETVAR_MSK(n_id) ((uint16_t)1 << (n_id))
 #define _NETVAR_STATIC_LAN_ADDRS \
     (_NETVAR_MSK(_NETVAR_LAN_IP4_ADDR) | _NETVAR_MSK(_NETVAR_LAN_IP4_MSK) | _NETVAR_MSK(_NETVAR_LAN_IP4_GW))
+typedef struct {
+    char token[CONNECT_TOKEN_SIZE + 1];
+    uint32_t port;
+    ip4_addr_t ip4;
+} connect_t; 
+
+typedef struct {
+    ip4_addr_t addr_ip4;
+    ip4_addr_t msk_ip4;
+    ip4_addr_t gw_ip4;
+} lan_t;
 
 typedef struct {
     uint8_t lan_flag;
     char hostname[LAN_HOSTNAME_MAX_LEN + 1];
 #ifdef BUDDY_ENABLE_CONNECT
-    char connect_token[CONNECT_TOKEN_SIZE + 1];
-    ip4_addr_t connect_ip4;
+    connect_t connect;
 #endif // BUDDY_ENABLE_CONNECT
-    ip4_addr_t lan_ip4_addr;
-    ip4_addr_t lan_ip4_msk;
-    ip4_addr_t lan_ip4_gw;
+    lan_t lan;
     uint16_t set_flag;
     ip4_addr_t dns1_ip4;
     ip4_addr_t dns2_ip4;
