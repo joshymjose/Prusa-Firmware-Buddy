@@ -3,13 +3,15 @@
 #define INI_HANDLER_H
 
 #include <stdint.h>
-#include "ini.h"
 #include "lwip.h"
 #define MAX_INI_SIZE 200
 
+typedef int (*ini_handler)(void* user, const char* section,
+                           const char* name, const char* value);
+
 uint8_t ini_save_file(const char *ini_save_str);
 uint8_t ini_load_file(ini_handler handler, void *user_struct);
-
+uint8_t load_config_from_ini(void);
 char ini_file_str[MAX_INI_SIZE];
 
 typedef enum{

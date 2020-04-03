@@ -6,6 +6,7 @@
 #include "lwip/dhcp.h"
 #include "lwip/netifapi.h"
 #include "dns.h"
+#include "ini.h"
 
 static const char network_ini_file_name[] = "/lan_settings.ini"; //change -> change msgboxes in screen_lan_settings
 

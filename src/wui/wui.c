@@ -14,6 +14,7 @@
 #include "http_client.h"
 #include "eeprom.h"
 #include <string.h>
+#include "ini_handler.h"
 
 #define MAX_WUI_REQUEST_LEN    100
 #define MAX_MARLIN_REQUEST_LEN 100
@@ -99,6 +100,11 @@ void StartWebServerTask(void const *argument) {
 
     MX_LWIP_Init();
     http_server_init();
+
+    if(load_config_from_ini()){
+        //SUCCESS
+    }
+
     for (;;) {
         ethernetif_link(&eth0);
         wui_queue_cycle();
