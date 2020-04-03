@@ -124,15 +124,16 @@ void MX_LWIP_Init(void) {
     eth0.hostname = interface_hostname;
     /* This won't execute until user loads static lan settings at least once (default is DHCP) */
     if (ee_lan_flg & LAN_EEFLG_TYPE) {
-        ip_addr_t dns1, dns2;
         ipaddr.addr = eeprom_get_var(EEVAR_LAN_IP4_ADDR).ui32;
         netmask.addr = eeprom_get_var(EEVAR_LAN_IP4_MSK).ui32;
         gw.addr = eeprom_get_var(EEVAR_LAN_IP4_GW).ui32;
+#ifdef ENABLE_DNS
+        ip_addr_t dns1, dns2;
         dns1.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS1).ui32;
         dns2.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
         dns_setserver(0, &dns1);
         dns_setserver(1, &dns2);
-        
+#endif
         netif_set_addr(&eth0, &ipaddr, &netmask, &gw);
     }
     if(!(ee_lan_flg & LAN_EEFLG_ONOFF) && netif_is_link_up(&eth0)){

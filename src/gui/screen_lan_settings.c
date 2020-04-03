@@ -12,7 +12,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "dns.h"
+#ifdef ENABLE_DNS
+    #include "dns.h"
+#endif
 
 #define MAC_ADDR_START    0x1FFF781A //MM:MM:MM:SS:SS:SS
 #define MAC_ADDR_SIZE     6
@@ -53,8 +55,10 @@ static void _get_ip4_addrs(void) {
             config.lan_ip4_addr.addr = netif_ip4_addr(&eth0)->addr;
             config.lan_ip4_msk.addr = netif_ip4_netmask(&eth0)->addr;
             config.lan_ip4_gw.addr = netif_ip4_gw(&eth0)->addr;
+        #ifdef ENABLE_DNS
             config.dns1_ip4.addr = dns_getserver(0)->addr;
             config.dns2_ip4.addr = dns_getserver(1)->addr;
+        #endif
             return;
         }
     }
@@ -62,15 +66,19 @@ static void _get_ip4_addrs(void) {
         config.lan_ip4_addr.addr = 0;
         config.lan_ip4_msk.addr = 0;
         config.lan_ip4_gw.addr = 0;
+#ifdef ENABLE_DNS
         config.dns1_ip4.addr = 0;
         config.dns2_ip4.addr = 0;
+#endif
         return;
     }
     config.lan_ip4_addr.addr = eeprom_get_var(EEVAR_LAN_IP4_ADDR).ui32;
     config.lan_ip4_msk.addr = eeprom_get_var(EEVAR_LAN_IP4_MSK).ui32;
     config.lan_ip4_gw.addr = eeprom_get_var(EEVAR_LAN_IP4_GW).ui32;
+#ifdef ENABLE_DNS
     config.dns1_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS1).ui32;
     config.dns2_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
+#endif
 }
 
 /** Puts wanted net info in the string.
@@ -88,9 +96,10 @@ static void stringify_netinfo(char *param_str, uint8_t flg) {
     strlcpy(ip4_addr_str, ip4addr_ntoa(&(config.lan_ip4_addr)), IP4_ADDR_STR_SIZE);
     strlcpy(ip4_msk_str, ip4addr_ntoa(&(config.lan_ip4_msk)), IP4_ADDR_STR_SIZE);
     strlcpy(ip4_gw_str, ip4addr_ntoa(&(config.lan_ip4_gw)), IP4_ADDR_STR_SIZE);
+#ifdef ENABLE_DNS
     strlcpy(ip4_dns1_str, ip4addr_ntoa(&(config.dns1_ip4)), IP4_ADDR_STR_SIZE);
     strlcpy(ip4_dns2_str, ip4addr_ntoa(&(config.dns2_ip4)), IP4_ADDR_STR_SIZE);
-
+#endif
     if (flg) {
         char save_hostname[LAN_HOSTNAME_MAX_LEN + 1];
         variant8_t hostname = eeprom_get_var(EEVAR_LAN_HOSTNAME);
@@ -104,13 +113,24 @@ static void stringify_netinfo(char *param_str, uint8_t flg) {
         variant8_done(&connect_token);
         config.connect_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP4).ui32;
         strlcpy(ip4_connect_str, ip4addr_ntoa(&(config.connect_ip4)), IP4_ADDR_STR_SIZE);
+#ifdef ENABLE_DNS
         snprintf(param_str, MAX_INI_SIZE, "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\ndns1=%s\ndns2=%s\n\n[connect]\naddress=%s\ntoken=%s\n",
             config.lan_flag & LAN_EEFLG_TYPE ? LAN_type_opt[1] : LAN_type_opt[0], save_hostname, ip4_addr_str, ip4_msk_str, ip4_gw_str,
             ip4_dns1_str, ip4_dns2_str, ip4_connect_str, save_connect_token);
 #else
+        snprintf(param_str, MAX_INI_SIZE, "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\n\n[connect]\naddress=%s\ntoken=%s\n",
+            config.lan_flag & LAN_EEFLG_TYPE ? LAN_type_opt[1] : LAN_type_opt[0], save_hostname, ip4_addr_str, ip4_msk_str, ip4_gw_str,
+            ip4_connect_str, save_connect_token);
+#endif //ENABLE_DNS
+#else
+#ifdef ENABLE_DNS
         snprintf(param_str, MAX_INI_SIZE, "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\ndns1=%s\ndns2=%s\n",
             config.lan_flag & LAN_EEFLG_TYPE ? LAN_type_opt[1] : LAN_type_opt[0], save_hostname, ip4_addr_str, ip4_msk_str, ip4_gw_str,
             ip4_dns1_str, ip4_dns2_str);
+#else
+        snprintf(param_str, MAX_INI_SIZE, "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\n",
+            config.lan_flag & LAN_EEFLG_TYPE ? LAN_type_opt[1] : LAN_type_opt[0], save_hostname, ip4_addr_str, ip4_msk_str, ip4_gw_str);
+#endif // ENABLE_DNS
 #endif // BUDDY_ENABLE_CONNECT
     } else {
         snprintf(plan_str, 150, "IPv4 Address:\n  %s      \nIPv4 Netmask:\n  %s      \nIPv4 Gateway:\n  %s      \nMAC Address:\n  %s",
@@ -198,17 +218,18 @@ static void _change_any_to_static(void) {
     config.lan_ip4_addr.addr = eeprom_get_var(EEVAR_LAN_IP4_ADDR).ui32;
     config.lan_ip4_msk.addr = eeprom_get_var(EEVAR_LAN_IP4_MSK).ui32;
     config.lan_ip4_gw.addr = eeprom_get_var(EEVAR_LAN_IP4_GW).ui32;
-
+#ifdef ENABLE_DNS
     config.dns1_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS1).ui32;
     config.dns2_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
-
+#endif
     netifapi_netif_set_addr(&eth0,
         (const ip4_addr_t *)&config.lan_ip4_addr,
         (const ip4_addr_t *)&config.lan_ip4_msk,
         (const ip4_addr_t *)&config.lan_ip4_gw);
-
+#ifdef ENABLE_DNS
     dns_setserver(0, (const ip4_addr_t *)&(config.dns1_ip4));
     dns_setserver(1, (const ip4_addr_t *)&(config.dns2_ip4));
+#endif
     if (netif_is_link_up(&eth0) && !(config.lan_flag & LAN_EEFLG_ONOFF)) {
         netifapi_netif_set_up(&eth0);
     }
@@ -252,6 +273,7 @@ static int ini_load_handler(void *user, const char *section, const char *name, c
         if (ip4addr_aton(value, &tmp_config->lan_ip4_gw)) {
             tmp_config->set_flag |= NETVAR_MSK(NETVAR_LAN_IP4_GW);
         }
+#ifdef ENABLE_DNS
     } else if (MATCH("lan_ip4", "dns1")) {
         if (ip4addr_aton(value, &tmp_config->dns1_ip4)) {
             tmp_config->set_flag |= NETVAR_MSK(NETVAR_DNS1);
@@ -260,6 +282,7 @@ static int ini_load_handler(void *user, const char *section, const char *name, c
         if (ip4addr_aton(value, &tmp_config->dns2_ip4)) {
             tmp_config->set_flag |= NETVAR_MSK(NETVAR_DNS2);
         }
+#endif
     }
 #ifdef BUDDY_ENABLE_CONNECT
     else if (MATCH("connect", "address")) {
@@ -282,8 +305,10 @@ static uint8_t _load_config(void) {
 
     networkconfig_t tmp_config;
     tmp_config.lan_flag = config.lan_flag;
-    tmp_config.set_flag = tmp_config.dns1_ip4.addr = tmp_config.dns2_ip4.addr = 0;
-
+    tmp_config.set_flag = 0;
+#ifdef ENABLE_DNS
+    tmp_config.dns1_ip4.addr = tmp_config.dns2_ip4.addr = 0;
+#endif
     if (ini_load_file(ini_load_handler, &tmp_config) == 0) {
         return 0;
     }
@@ -309,9 +334,12 @@ static uint8_t _load_config(void) {
         }
 #endif // BUDDY_ENABLE_CONNECT
     } else {
-        if ((tmp_config.set_flag & NETVAR_STATIC_LAN_ADDRS) != NETVAR_STATIC_LAN_ADDRS ||
-            ((tmp_config.set_flag & NETVAR_MSK(NETVAR_DNS1)) == 0 && (tmp_config.set_flag & NETVAR_MSK(NETVAR_DNS2)) == 0 ) || 
-            (tmp_config.dns1_ip4.addr == 0 && tmp_config.dns2_ip4.addr == 0)) {
+        if ((tmp_config.set_flag & NETVAR_STATIC_LAN_ADDRS) != NETVAR_STATIC_LAN_ADDRS 
+#ifdef ENABLE_DNS
+            || ((tmp_config.set_flag & NETVAR_MSK(NETVAR_DNS1)) == 0 && (tmp_config.set_flag & NETVAR_MSK(NETVAR_DNS2)) == 0 ) || 
+            (tmp_config.dns1_ip4.addr == 0 && tmp_config.dns2_ip4.addr == 0)
+#endif
+            ) {
             return 0;
         } else {
             if (tmp_config.set_flag & NETVAR_MSK(NETVAR_HOSTNAME)) {
@@ -334,9 +362,10 @@ static uint8_t _load_config(void) {
             eeprom_set_var(EEVAR_LAN_IP4_ADDR, variant8_ui32(tmp_config.lan_ip4_addr.addr));
             eeprom_set_var(EEVAR_LAN_IP4_MSK, variant8_ui32(tmp_config.lan_ip4_msk.addr));
             eeprom_set_var(EEVAR_LAN_IP4_GW, variant8_ui32(tmp_config.lan_ip4_gw.addr));
-
+#ifdef ENABLE_DNS
             eeprom_set_var(EEVAR_LAN_IP4_DNS1, variant8_ui32(tmp_config.dns1_ip4.addr));
             eeprom_set_var(EEVAR_LAN_IP4_DNS2, variant8_ui32(tmp_config.dns2_ip4.addr));
+#endif
             _change_any_to_static();
         }
     }

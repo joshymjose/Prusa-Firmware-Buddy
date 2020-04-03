@@ -25,8 +25,10 @@ typedef enum{
     NETVAR_LAN_IP4_ADDR,
     NETVAR_LAN_IP4_MSK,
     NETVAR_LAN_IP4_GW,
-    NETVAR_DNS1,
-    NETVAR_DNS2,
+    #ifdef ENABLE_DNS
+        NETVAR_DNS1,
+        NETVAR_DNS2,
+    #endif
     NETVAR_CONNECT_IP4,
 } NETVAR_t;
 #define NETVAR_MSK(n_id) ((uint16_t)1 << (n_id))
@@ -54,8 +56,10 @@ typedef struct {
     ip4_addr_t lan_ip4_msk;
     ip4_addr_t lan_ip4_gw;
     uint16_t set_flag;
+#ifdef ENABLE_DNS
     ip4_addr_t dns1_ip4;
     ip4_addr_t dns2_ip4;
+#endif
 } networkconfig_t;
 
 extern screen_t screen_lan_settings;
