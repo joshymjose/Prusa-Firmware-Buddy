@@ -99,12 +99,10 @@ void StartWebServerTask(void const *argument) {
     wui_req.flags = wui_req.request_len = 0;
 
     MX_LWIP_Init();
-    http_server_init();
-
     if(load_config_from_ini()){
         //SUCCESS
     }
-
+    http_server_init();
     for (;;) {
         ethernetif_link(&eth0);
         wui_queue_cycle();
