@@ -547,6 +547,8 @@ wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type) {
     host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP4).ui32;
     strlcpy(host_ip4_str, ip4addr_ntoa(&host_ip4), IP4_ADDR_STR_SIZE);
 
+    uint16_t port = eeprom_get_var(EEVAR_CONNECT_PORT).ui16;
+
     header_plus_data = create_http_request(reqest_type);
     if (!header_plus_data) {
         return ERR_ARG;
@@ -601,7 +603,7 @@ wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type) {
         return ERR_VAL;
     }
 
-    tcp_connect(req->pcb, &host_ip4, CONNECT_SERVER_PORT, httpc_tcp_connected);
+    tcp_connect(req->pcb, &host_ip4, port, httpc_tcp_connected);
     return ERR_OK;
 }
 
