@@ -61,10 +61,6 @@ static void _change_any_to_static(_networkconfig_t * config) {
         (const ip4_addr_t *)&(config->lan.msk_ip4),
         (const ip4_addr_t *)&(config->lan.gw_ip4)
         );
-#ifdef ENABLE_DNS
-    dns_setserver(0, (const ip4_addr_t *)&(config->dns1_ip4));
-    dns_setserver(1, (const ip4_addr_t *)&(config->dns2_ip4));
-#endif
     if (netif_is_link_up(&eth0) && !(config->lan_flag & LAN_EEFLG_ONOFF)) {
         netifapi_netif_set_up(&eth0);
     }
@@ -86,9 +82,7 @@ uint8_t load_config_from_ini(void){
     _networkconfig_t tmp_config;
     tmp_config.lan_flag = eeprom_get_var(EEVAR_LAN_FLAG).ui8;
     tmp_config.set_flag = 0;
-#ifdef ENABLE_DNS
-    tmp_config.dns1_ip4.addr = tmp_config.dns2_ip4.addr = 0;
-#endif
+
     if (ini_load_file(ini_config_handler, &tmp_config) == 0) {
         return 0;
     }
@@ -97,22 +91,12 @@ uint8_t load_config_from_ini(void){
     if (tmp_config.set_flag & _NETVAR_MSK(_NETVAR_LAN_FLAGS)) {
         // if lan type is set to STATIC
         if ((tmp_config.lan_flag & LAN_EEFLG_TYPE)){
-            if ((tmp_config.set_flag & _NETVAR_STATIC_LAN_ADDRS) != _NETVAR_STATIC_LAN_ADDRS 
-#ifdef ENABLE_DNS
-                || ((tmp_config.set_flag & _NETVAR_MSK(_NETVAR_DNS1_IP4)) == 0 && 
-                (tmp_config.set_flag & _NETVAR_MSK(_NETVAR_DNS2_IP4)) == 0 ) || 
-                (tmp_config.dns1_ip4.addr == 0 && tmp_config.dns2_ip4.addr == 0)
-#endif
-                ) {
+            if ((tmp_config.set_flag & _NETVAR_STATIC_LAN_ADDRS) != _NETVAR_STATIC_LAN_ADDRS) {
                 return 0;
             }
             eeprom_set_var(EEVAR_LAN_IP4_ADDR, variant8_ui32(tmp_config.lan.addr_ip4.addr));
             eeprom_set_var(EEVAR_LAN_IP4_MSK, variant8_ui32(tmp_config.lan.msk_ip4.addr));
             eeprom_set_var(EEVAR_LAN_IP4_GW, variant8_ui32(tmp_config.lan.gw_ip4.addr));
-#ifdef ENABLE_DNS
-            eeprom_set_var(EEVAR_LAN_IP4_DNS1, variant8_ui32(tmp_config.dns1_ip4.addr));
-            eeprom_set_var(EEVAR_LAN_IP4_DNS2, variant8_ui32(tmp_config.dns2_ip4.addr));
-#endif
         }
     }
     if (tmp_config.set_flag & _NETVAR_MSK(_NETVAR_HOSTNAME)) {
@@ -176,18 +160,7 @@ static int ini_config_handler(void *user, const char *section, const char *name,
         if (ip4addr_aton(value, &tmp_config->lan.gw_ip4)) {
             tmp_config->set_flag |= _NETVAR_MSK(_NETVAR_LAN_IP4_GW);
         }
-    } 
-#ifdef ENABLE_DNS
-    else if (MATCH("lan_ip4", "dns1")) {
-        if (ip4addr_aton(value, &tmp_config->dns1_ip4)) {
-            tmp_config->set_flag |= _NETVAR_MSK(_NETVAR_DNS1_IP4);
-        }
-    } else if (MATCH("lan_ip4", "dns2")) {
-        if (ip4addr_aton(value, &tmp_config->dns2_ip4)) {
-            tmp_config->set_flag |= _NETVAR_MSK(_NETVAR_DNS2_IP4);
-        }
     }
-#endif ENABLE_DNS
 #ifdef BUDDY_ENABLE_CONNECT
     else if (MATCH("connect", "address")) {
         if (ip4addr_aton(value, &(tmp_config->connect.ip4))) {

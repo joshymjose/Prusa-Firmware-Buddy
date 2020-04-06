@@ -21,10 +21,6 @@ typedef enum{
     _NETVAR_LAN_IP4_ADDR,
     _NETVAR_LAN_IP4_MSK,
     _NETVAR_LAN_IP4_GW,
-#ifdef ENABLE_DNS
-    _NETVAR_DNS1_IP4,
-    _NETVAR_DNS2_IP4,
-#endif
     _NETVAR_CONNECT_IP4,
     _NETVAR_CONNECT_PORT,
 } _NETVAR_t;
@@ -51,10 +47,6 @@ typedef struct {
 #endif // BUDDY_ENABLE_CONNECT
     lan_t lan;
     uint16_t set_flag;
-#ifdef ENABLE_DNS
-    ip4_addr_t dns1_ip4;
-    ip4_addr_t dns2_ip4;
-#endif // ENABLE_DNS
 } _networkconfig_t;
 
 #endif //INI_HANDLER_H
