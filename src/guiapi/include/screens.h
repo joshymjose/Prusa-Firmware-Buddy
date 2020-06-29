@@ -36,6 +36,7 @@ extern screen_t *const get_scr_print_preview();
 extern screen_t *const get_scr_lan_settings();
 extern screen_t *const get_scr_marlin();
 extern screen_t *const get_scr_menu_fw_update();
+extern screen_t *const get_scr_menu_appendix_status();
 extern screen_t *const get_scr_print_preview();
 #ifdef PIDCALIBRATION
 extern screen_t *const get_scr_PID();

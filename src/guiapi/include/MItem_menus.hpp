@@ -134,6 +134,16 @@ protected:
     virtual void click(IWindowMenu &window_menu) override;
 };
 
+class MI_APPENDIX_STATUS : public WI_LABEL_t {
+    static constexpr const char *const label = N_("Appendix status");
+
+public:
+    MI_APPENDIX_STATUS();
+
+protected:
+    virtual void click(IWindowMenu &window_menu) override;
+};
+
 class MI_LAN_SETTINGS : public WI_LABEL_t {
     static constexpr const char *const label = N_("Lan settings");
 

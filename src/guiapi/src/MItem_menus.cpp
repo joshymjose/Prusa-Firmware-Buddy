@@ -120,6 +120,14 @@ void MI_FW_UPDATE::click(IWindowMenu & /*window_menu*/) {
 }
 
 /*****************************************************************************/
+//MI_APPENDIX_STATUS
+MI_APPENDIX_STATUS::MI_APPENDIX_STATUS()
+    : WI_LABEL_t(label, 0, true, false) {
+}
+void MI_APPENDIX_STATUS::click(IWindowMenu & /*window_menu*/) {
+    screen_open(get_scr_menu_appendix_status()->id);
+}
+/*****************************************************************************/
 //MI_LAN_SETTINGS
 MI_LAN_SETTINGS::MI_LAN_SETTINGS()
     : WI_LABEL_t(label, 0, true, false) {
