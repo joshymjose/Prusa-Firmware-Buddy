@@ -503,6 +503,7 @@ if(GUI)
             src/gui/window_header.c
             src/gui/screen_sysinf.c
             src/gui/screen_version_info.cpp
+            src/gui/screen_appendix_info.cpp
             src/gui/test_display.c
             src/gui/screen_splash.c
             src/gui/screen_menu_service.c

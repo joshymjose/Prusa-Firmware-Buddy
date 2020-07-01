@@ -256,6 +256,11 @@ int sys_fw_update_on_restart_is_enabled(void) {
     return (FW_UPDATE_ENABLE == ram_data_exchange.fw_update_flag) ? 1 : 0;
 }
 
+int sys_fw_appendix_status(void) {
+    // return 1 if appendix broken
+    return (0x01 & ram_data_exchange.model_specific_flags) ? 1 : 0;
+}
+
 void sys_fw_update_on_restart_enable(void) {
     ram_data_exchange.fw_update_flag = FW_UPDATE_ENABLE;
 }

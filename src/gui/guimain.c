@@ -53,10 +53,12 @@ extern screen_t *pscreen_menu_tune;
 extern screen_t *pscreen_menu_service;
 extern screen_t *pscreen_sysinfo;
 extern screen_t *pscreen_version_info;
+extern screen_t *pscreen_appendix_info;
 extern screen_t *pscreen_qr_info;
 extern screen_t *pscreen_qr_error;
 extern screen_t *pscreen_test_disp_mem;
 extern screen_t *pscreen_messages;
+extern screen_t *pscreen_menu_fw_update;
     #ifdef PIDCALIBRATION
 extern screen_t *pscreen_PID;
     #endif //PIDCALIBRATION
@@ -207,6 +209,7 @@ void gui_run(void) {
     screen_register(pscreen_menu_service);
     screen_register(pscreen_sysinfo);
     screen_register(pscreen_version_info);
+    screen_register(pscreen_appendix_info);
     screen_register(pscreen_qr_info);
     screen_register(pscreen_qr_error);
     screen_register(pscreen_test_disp_mem);

@@ -5,6 +5,7 @@
 
 extern screen_t screen_sysinfo;
 extern screen_t screen_version_info;
+extern screen_t screen_appendix_info;
 extern screen_t screen_qr_info;
 extern screen_t screen_qr_error;
 
@@ -19,6 +20,7 @@ typedef enum {
     MI_SUPPORT,
 #endif //_DEBUG
     MI_VERSIONS,
+    MI_APPENDIX,
     MI_COUNT
 } MI_t;
 
@@ -42,6 +44,12 @@ const menu_item_t _menu_info_items[] = {
           WI_LABEL,
       },
         &screen_version_info },
+    { {
+          "Appendix Info",
+          0,
+          WI_LABEL,
+      },
+        &screen_appendix_info },
 #ifdef _DEBUG
     { { "Send Info by QR", 0, WI_LABEL }, &screen_qr_info },
     { { "QR test", 0, WI_LABEL }, &screen_qr_error },

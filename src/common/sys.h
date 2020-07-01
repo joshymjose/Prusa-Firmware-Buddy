@@ -44,6 +44,8 @@ extern void sys_fw_update_disable(void);
 
 extern int sys_fw_update_on_restart_is_enabled(void);
 
+extern int sys_fw_appendix_status(void);
+
 extern void sys_fw_update_on_restart_enable(void);
 
 extern void sys_fw_update_on_restart_disable(void);
