@@ -17,6 +17,7 @@
 #include "dbg.h"
 #include "UART_RingBuffer.h"
 #include "uartrxbuff.h"
+#include "lwesp/lwesp.h"
 
 #define WUI_NETIF_SETUP_DELAY  1000
 #define WUI_COMMAND_QUEUE_SIZE WUI_WUI_MQ_CNT // maximal number of messages at once in WUI command messageQ
@@ -80,15 +81,6 @@ void StartWebServerTask(void const *argument) {
     // get settings from ini file
     osDelay(1000);
     printf("wui starts");
-    
-    // Ringbuf_init();
-
-    // Uart_flush(&huart6);
-    // char line[] = "AT+CWSAP=\"PRUSA_MINI\",\"\",5,0\r\n";
-    // Uart_sendstring("AT+CWSAP=\"PRUSA_HOVNO\",\"\",5,0\r\n", &huart6);
-    // Uart_sendstring("AT\r\n", &huart6);
-    // while(!(Wait_for("OK\r\n", &huart6)));
-    // _dbg0("AT+CWSAP-->OK\n");
 
     if (load_ini_file(&wui_eth_config)) {
         save_eth_params(&wui_eth_config);
@@ -105,17 +97,21 @@ void StartWebServerTask(void const *argument) {
     sntp_client_init();
     osDelay(WUI_NETIF_SETUP_DELAY); // wait for all settings to take effect
 
-    uartrxbuff_t *ub = &uart6rxbuff;
+    if (lwesp_init(NULL, 1) != lwespOK) {
+        printf("Cannot initialize LwESP!\r\n");
+    } else {
+        printf("LwESP initialized!\r\n");
+    }
 
+    uartrxbuff_t *ub = &uart6rxbuff;
+    lwesp_mode_t mode = LWESP_MODE_STA_AP;
     for (;;) {
         update_eth_changes();
         sync_with_marlin_server();
-
-        // char *rxBuff = &uart6rxbuff.buffer
-        // _dbg0("MASLO %s", rxBuff);
-        _dbg0("MASLO %s", ub->buffer);
-        _dbg0("-----------\n");
-
-        osDelay(10);
+        lwesp_get_wifi_mode(&mode, NULL, NULL, 0);
+        if (mode == LWESP_MODE_STA) {
+            printf("hkhk");
+        }
+        osDelay(1000);
     }
 }

@@ -318,17 +318,18 @@ int main(void) {
     /* definition and creation of displayTask */
     osThreadDef(displayTask, StartDisplayTask, osPriorityNormal, 0, 2048);
     displayTaskHandle = osThreadCreate(osThread(displayTask), NULL);
-#if 0
-    #ifdef BUDDY_ENABLE_WUI
+
+#ifdef BUDDY_ENABLE_WUI
     /* definition and creation of webServerTask */
     osThreadDef(webServerTask, StartWebServerTask, osPriorityNormal, 0, BUDDY_WEB_STACK_SIZE);
     webServerTaskHandle = osThreadCreate(osThread(webServerTask), NULL);
-    #endif
 #endif
-    /* definition and creation of webServerTask */
+
+#if 0
+    /* definition and creation of ESPTask */
     osThreadDef(ESPTask, StartESPTask, osPriorityNormal, 0, 1024);
     webServerTaskHandle = osThreadCreate(osThread(ESPTask), NULL);
-
+#endif
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
     /* definition and creation of measurementTask */
@@ -999,7 +1000,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 }
 
 /* USER CODE END 4 */
-
+#if 0
 void StartESPTask(void const *argument) {
     if (lwesp_init(NULL, 1) != lwespOK) {
         printf("Cannot initialize LwESP!\r\n");
@@ -1017,6 +1018,7 @@ void StartESPTask(void const *argument) {
         osDelay(3000);
     }
 }
+#endif
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
